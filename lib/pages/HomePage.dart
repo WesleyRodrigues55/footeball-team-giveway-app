@@ -16,6 +16,7 @@ class _HomePageState extends State<HomePage> {
   final List<Player> listPlayers = [];
   int quantityPlayers = 0;
 
+  // importa e padroniza os dados
   void _getData(context, String data) {
     final names = data.split('\n').where((line) {
     final trimmed = line.trim();
@@ -37,7 +38,7 @@ class _HomePageState extends State<HomePage> {
     Navigator.of(context).pop();
   }
 
-  // gera ai mportação da lista de jogadores
+  // Abre o diálogo, e executa a importação da lista de jogadores
   void _showDialogModalImportData(BuildContext context) {
     showDialog(
       context: context,
@@ -74,6 +75,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  // Abre o diálogo, e executa o sorteio dos times
   void _showDialogModalDrawTeams(BuildContext context, countPlayers) {
     showDialog(
       context: context,
@@ -123,6 +125,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  // Sorteia os times
   void _drawTeams(quantityPlayersPerTeam) {
     final teams = <List<Player>>[];
 
@@ -192,7 +195,8 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
- void _copyToClipboard(teams) {
+  // Copia a lista de jogadores para a área de transferência
+  void _copyToClipboard(teams) {
     Clipboard.setData(ClipboardData(
       text: teams.map((team) => 'Time ${teams.indexOf(team) + 1}:\n' + team.map((player) => player.name).join('\n')).join('\n\n')
     ));
@@ -200,6 +204,17 @@ class _HomePageState extends State<HomePage> {
       SnackBar(content: Text('Lista de jogadores copiada!'))
     );
     Navigator.of(context).pop();
+  }
+
+  // Define o tipo de jogador
+  void _setPlayerType(Player player, String type) {
+    setState(() {
+      if (player.typePlayer == type) {
+        player.typePlayer = 'normal';
+      } else {
+        player.typePlayer = type;
+      }
+    });
   }
 
   @override
@@ -230,13 +245,13 @@ class _HomePageState extends State<HomePage> {
                           tooltip: 'Jogador especial',
                           icon: Icon(Icons.star),
                           color: Colors.grey,
-                          onPressed: () {},
+                          onPressed: () => _setPlayerType(player, 'especial'),
                         ),
                         IconButton(
                           tooltip: 'Goleiro',
                           icon: Icon(Icons.sports_mma),
                           color: Colors.grey,
-                          onPressed: () {},
+                          onPressed: () => _setPlayerType(player, 'goleiro'),
                         ),
                       ]
                     ),
