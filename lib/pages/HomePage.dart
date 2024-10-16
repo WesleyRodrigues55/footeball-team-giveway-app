@@ -139,21 +139,36 @@ class _HomePageState extends State<HomePage> {
       teams.add([]);
     }
 
-    int playerIndex = 0;
-    for (var i = 0; i < teams.length && playerIndex < players.length; i++) {
-      while (teams[i].length < playersPerTeam && playerIndex < players.length) {
-        teams[i].add(players[playerIndex]);
-        playerIndex++;
+    // Separe os jogadores especiais e os goleiros do restante dos jogadores
+    final specialPlayers = players.where((player) => player.typePlayer == 'especial').toList();
+    final goalkeepers = players.where((player) => player.typePlayer == 'goleiro').toList();
+    final remainingPlayers = players
+        .where((player) => player.typePlayer != 'especial' && player.typePlayer != 'goleiro')
+        .toList();
+
+    // Embaralhe as listas para garantir aleatoriedade
+    specialPlayers.shuffle();
+    goalkeepers.shuffle();
+    remainingPlayers.shuffle();
+
+    // Distribua um jogador especial (se houver) e um goleiro (se houver) para cada time
+    for (var i = 0; i < teams.length; i++) {
+      if (specialPlayers.isNotEmpty) {
+        teams[i].add(specialPlayers.removeLast());
+      }
+      if (goalkeepers.isNotEmpty) {
+        teams[i].add(goalkeepers.removeLast());
       }
     }
 
-    // for (var i = 0; i < teams.length; i++) {
-    //   print('Time ${i + 1}:');
-    //   for (var player in teams[i]) {
-    //     print(player.name); 
-    //   }
-    //   print('');
-    // }
+    // Distribua os jogadores restantes nos times, garantindo que cada time tenha no máximo `playersPerTeam` jogadores
+    int playerIndex = 0;
+    for (var i = 0; i < teams.length && playerIndex < remainingPlayers.length; i++) {
+      while (teams[i].length < playersPerTeam && playerIndex < remainingPlayers.length) {
+        teams[i].add(remainingPlayers[playerIndex]);
+        playerIndex++;
+      }
+    }
 
     showDialog(
       context: context,
@@ -219,6 +234,55 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+
+    if (listPlayers.isEmpty) {
+      return Scaffold(
+        appBar: AppBar(
+          backgroundColor: Colors.black12,
+          title: Text('Footeball Team Giveaway'),
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text('Nenhum jogador na lista'),
+              SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () => _showDialogModalImportData(context),
+                child: Text('Importar lista de jogadores'),
+              ),
+            ],
+          ),
+        ),
+        bottomNavigationBar: BottomNavigationBar(
+          items: const <BottomNavigationBarItem>[
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home),
+              label: 'Home',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.list),
+              label: 'Players',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.settings),
+              label: 'Settings',
+            ),
+          ],
+          currentIndex: 0,
+          selectedItemColor: Colors.black,
+          onTap: (index) {
+            // Handle navigation to different pages here
+          },
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () => _showDialogModalImportData(context),
+          child: Icon(Icons.add),
+        ),
+      );
+    }
+
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.black12,
@@ -244,13 +308,13 @@ class _HomePageState extends State<HomePage> {
                         IconButton(
                           tooltip: 'Jogador especial',
                           icon: Icon(Icons.star),
-                          color: Colors.grey,
+                          color: player.typePlayer == 'especial' ? Colors.yellow : Colors.grey,
                           onPressed: () => _setPlayerType(player, 'especial'),
                         ),
                         IconButton(
                           tooltip: 'Goleiro',
                           icon: Icon(Icons.sports_mma),
-                          color: Colors.grey,
+                          color: player.typePlayer == 'goleiro' ? Colors.blue : Colors.grey,
                           onPressed: () => _setPlayerType(player, 'goleiro'),
                         ),
                       ]
