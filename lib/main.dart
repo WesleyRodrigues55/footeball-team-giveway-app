@@ -13,7 +13,7 @@ class MainApp extends StatelessWidget {
     return MaterialApp(
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
-            seedColor: Colors.black),
+            seedColor: Colors.lightGreenAccent),
         useMaterial3: true,
       ),
       debugShowCheckedModeBanner: false,

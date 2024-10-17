@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:footeball_team_giveway_app/components/MyShowDialog.dart';
 import 'package:footeball_team_giveway_app/model/Player.dart';
 
 class HomePage extends StatefulWidget {
@@ -45,11 +46,12 @@ class _HomePageState extends State<HomePage> {
 
   // Abre o diálogo, e executa a importação da lista de jogadores
   void _showDialogModalImportData(BuildContext context) {
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Importar lista de jogadores'),
+        return MyShowDialog(
+          title: 'Importar lista de jogadores',
           content: Form(
             key: formKey,
             child: TextFormField(
@@ -76,8 +78,42 @@ class _HomePageState extends State<HomePage> {
             ),
           ],
         );
-      },
+      }
     );
+
+    // showDialog(
+    //   context: context,
+    //   builder: (BuildContext context) {
+    //     return AlertDialog(
+    //       title: Text('Importar lista de jogadores'),
+    //       content: Form(
+    //         key: formKey,
+    //         child: TextFormField(
+    //           controller: controllerData,
+    //           maxLines: 10,
+    //           decoration: InputDecoration(
+    //             hintText: 'Estilo aceitável:\n1- Player 1\n2- Player 2\n3- Player 3\n4- ...',
+    //             border: OutlineInputBorder(),
+    //           ),
+    //         ),
+    //       ),
+    //       actions: <Widget>[
+    //         TextButton(
+    //           onPressed: () {
+    //             Navigator.of(context).pop();
+    //           },
+    //           child: Text('Cancelar'),
+    //         ),
+    //         TextButton(
+    //           onPressed: () {
+    //             _getData(context, controllerData.text);
+    //           },
+    //           child: Text('Importar Lista'),
+    //         ),
+    //       ],
+    //     );
+    //   },
+    // );
   }
 
   // Abre o diálogo, e executa o sorteio dos times
@@ -249,6 +285,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  // Limpa a lista de jogadores
   void _clearListPlayer(BuildContext context, countPlayers) {
     showDialog(
       context: context,
@@ -284,143 +321,120 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-
-    if (listPlayers.isEmpty) {
       return Scaffold(
         appBar: AppBar(
-          backgroundColor: Colors.black12,
-          title: Text('Footeball Team Giveaway'),
-        ),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+          backgroundColor: Colors.lightGreenAccent,
+          title: const Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              Text('Nenhum jogador na lista'),
-              SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () => _showDialogModalImportData(context),
-                child: Text('Importar lista de jogadores'),
+              Icon(Icons.sports_soccer),
+              Center(
+                child: Text('Sorteio de times de futebol')
               ),
             ],
           ),
         ),
-        // bottomNavigationBar: BottomNavigationBar(
-        //   items: const <BottomNavigationBarItem>[
-        //     BottomNavigationBarItem(
-        //       icon: Icon(Icons.home),
-        //       label: 'Home',
-        //     ),
-        //     BottomNavigationBarItem(
-        //       icon: Icon(Icons.list),
-        //       label: 'Players',
-        //     ),
-        //     BottomNavigationBarItem(
-        //       icon: Icon(Icons.settings),
-        //       label: 'Settings',
-        //     ),
-        //   ],
-        //   currentIndex: 0,
-        //   selectedItemColor: Colors.black,
-        //   onTap: (index) {
-        //   },
-        // ),
+        body: listPlayers.isEmpty ? HomeListWithEmpty(context) : HomeListWithPlayers(context),
+
         floatingActionButton: FloatingActionButton(
+          backgroundColor: Colors.lightGreenAccent,
           onPressed: () => _showDialogModalImportData(context),
           child: Icon(Icons.add),
         ),
       );
-    }
+  }
 
-
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.black12,
-        title: Text('Footeball Team Giveaway'),
-      ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: ListView.builder(
-                itemCount: listPlayers.length,
-                itemBuilder: (context, index) {
-                  final player = listPlayers[index];
-                  return ListTile(
-                    title: Text(listPlayers[index].name),
-                    subtitle: Text(player.typePlayer),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          tooltip: 'Jogador especial',
-                          icon: Icon(Icons.star),
-                          color: player.typePlayer == 'especial' ? Colors.red : Colors.grey,
-                          onPressed: () => _setPlayerType(player, 'especial'),
-                        ),
-                        IconButton(
-                          tooltip: 'Goleiro',
-                          icon: Icon(Icons.sports_mma),
-                          color: player.typePlayer == 'goleiro' ? Colors.blue : Colors.grey,
-                          onPressed: () => _setPlayerType(player, 'goleiro'),
-                        ),
-                        IconButton(
-                          tooltip: 'Remover',
-                          icon: Icon(Icons.remove),
-                          color: Colors.grey,
-                          onPressed: () => _delPlayerSelected(player),
-                        ),
-                      ]
-                    ),
-                    leading: Text('${index+1}'),
-                  );
-                },
-              ),
+  Column HomeListWithPlayers(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: ListView.builder(
+              itemCount: listPlayers.length,
+              itemBuilder: (context, index) {
+                final player = listPlayers[index];
+                return ListTile(
+                  title: Text(listPlayers[index].name),
+                  subtitle: Text(player.typePlayer),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        tooltip: 'Jogador especial',
+                        icon: Icon(Icons.star),
+                        color: player.typePlayer == 'especial' ? Colors.red : Colors.grey,
+                        onPressed: () => _setPlayerType(player, 'especial'),
+                      ),
+                      IconButton(
+                        tooltip: 'Goleiro',
+                        icon: Icon(Icons.sports_mma),
+                        color: player.typePlayer == 'goleiro' ? Colors.blue : Colors.grey,
+                        onPressed: () => _setPlayerType(player, 'goleiro'),
+                      ),
+                      IconButton(
+                        tooltip: 'Remover',
+                        icon: Icon(Icons.remove),
+                        color: Colors.grey,
+                        onPressed: () => _delPlayerSelected(player),
+                      ),
+                    ]
+                  ),
+                  leading: Text('${index+1}'),
+                );
+              },
             ),
           ),
-           ButtonBar(
-            alignment: MainAxisAlignment.center,
-            children: [
-              ElevatedButton(
-                onPressed: () => _clearListPlayer(context, quantityPlayers),
-                child: Icon(Icons.clear_all),
-              ),
-              ElevatedButton(
-                onPressed: () => _showDialogModalDrawTeams(context, quantityPlayers),
-                child: Text('Sortear Times'),
-              ),
-            ],
-          ),
-        ],
-      ),
-      
-      bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.list),
-            label: 'Players',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: 'Settings',
-          ),
-        ],
-        currentIndex: 0,
-        selectedItemColor: Colors.black,
-        onTap: (index) {
-          // Handle navigation to different pages here
-        },
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _showDialogModalImportData(context),
-        child: Icon(Icons.add),
-      ),
+        ),
+         ButtonBar(
+          alignment: MainAxisAlignment.center,
+          children: [
+            ElevatedButton(
+              onPressed: () => _clearListPlayer(context, quantityPlayers),
+              child: Icon(Icons.clear_all),
+            ),
+            ElevatedButton(
+              onPressed: () => _showDialogModalDrawTeams(context, quantityPlayers),
+              child: Text('Sortear Times'),
+            ),
+          ],
+        ),
+      ],
     );
+  }
+
+  Container HomeListWithEmpty(BuildContext context) {
+    return Container(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 32.0, horizontal: 16.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text('Nenhum jogador na lista'),
+                SizedBox(height: 16),
+                ElevatedButton(
+                  style: ButtonStyle(
+                    backgroundColor: MaterialStateProperty.all(Colors.lightGreenAccent),
+                  ),
+                  onPressed: () => _showDialogModalImportData(context),
+                  child: Container(
+                    width: 240,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.import_export),
+                        Text('Importar lista de jogadores'),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
   }
 }
