@@ -5,7 +5,7 @@ class SnackBarUtils {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(mensagem),
-        backgroundColor: color ?? Colors.black,
+        backgroundColor: color ?? Colors.lightGreenAccent[600],
         duration: Duration(seconds: 1),
 
       ),

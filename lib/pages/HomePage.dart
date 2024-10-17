@@ -192,14 +192,8 @@ class _HomePageState extends State<HomePage> {
       return Scaffold(
         appBar: AppBar(
           backgroundColor: Colors.lightGreenAccent,
-          title: const Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              Icon(Icons.sports_soccer),
-              Center(
-                child: Text('Sorteio de times de futebol')
-              ),
-            ],
+          title:  const Center(
+            child: Text('Sorteio de times de futebol')
           ),
         ),
         body: listPlayers.isEmpty ? HomeListWithEmpty(context) : HomeListWithPlayers(context),
@@ -233,7 +227,7 @@ class _HomePageState extends State<HomePage> {
                       IconButton(
                         tooltip: 'Jogador especial',
                         icon: Icon(Icons.star),
-                        color: player.typePlayer == 'especial' ? Colors.red : Colors.grey,
+                        color: player.typePlayer == 'especial' ? Colors.lightGreenAccent[400] : Colors.grey,
                         onPressed: () => _setPlayerType(player, 'especial'),
                       ),
                       IconButton(
@@ -257,15 +251,27 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
          ButtonBar(
-          alignment: MainAxisAlignment.center,
+          alignment: MainAxisAlignment.start,
           children: [
             ElevatedButton(
               onPressed: () => _showDialogModalClearListPlayer(context),
-              child: Icon(Icons.clear_all),
+              child: const Row(
+                children: [
+                  Icon(Icons.clear_all),
+                  SizedBox(width: 8),
+                  Text('Limpar'),
+                ],
+              ),
             ),
             ElevatedButton(
               onPressed: () => _showDialogModalDrawTeams(context, quantityPlayers),
-              child: Text('Sortear Times'),
+              child: const Row(
+                children: [
+                  Icon(Icons.sort),
+                  SizedBox(width: 8),
+                  Text('Sortear'),
+                ],
+              ),
             ),
           ],
         ),
@@ -280,9 +286,13 @@ class _HomePageState extends State<HomePage> {
             padding: const EdgeInsets.symmetric(vertical: 32.0, horizontal: 16.0),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Text('Nenhum jogador na lista'),
-                SizedBox(height: 16),
+                Image.asset('assets/images/logo.png', width: 240,),
+                const Divider(),  
+                const SizedBox(height: 24),
+                const Text('Nenhum jogador na lista'),
+                const SizedBox(height: 16),
                 ElevatedButton(
                   style: ButtonStyle(
                     backgroundColor: MaterialStateProperty.all(Colors.lightGreenAccent),
