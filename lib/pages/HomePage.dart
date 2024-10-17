@@ -21,9 +21,11 @@ class _HomePageState extends State<HomePage> {
     final names = data.split('\n').where((line) {
     final trimmed = line.trim();
 
-      return RegExp(r'^\d+\s*-\s*').hasMatch(trimmed);
+      // return RegExp(r'^\d+\s*-\s*').hasMatch(trimmed);
+      return RegExp(r'^(\d+\s*-\s*|\d+\s*|\-\s*)?.+', caseSensitive: false).hasMatch(trimmed);
     }).map((line) {
-      var name = line.replaceFirst(RegExp(r'^\d+\s*-\s*'), '').trim();
+      // var name = line.replaceFirst(RegExp(r'^\d+\s*-\s*'), '').trim();
+      var name = line.replaceFirst(RegExp(r'^(\d+\s*-\s*|\d+\s*|\-\s*)', caseSensitive: false), '').trim();
       String typePlayer = 'normal';
 
       return Player(name: name, typePlayer: typePlayer);
@@ -36,6 +38,9 @@ class _HomePageState extends State<HomePage> {
 
     controllerData.value = TextEditingValue.empty;
     Navigator.of(context).pop();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Jogador(es) adicionado na lista!'))
+    );
   }
 
   // Abre o diálogo, e executa a importação da lista de jogadores
@@ -61,13 +66,13 @@ class _HomePageState extends State<HomePage> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('Close'),
+              child: Text('Cancelar'),
             ),
             TextButton(
               onPressed: () {
                 _getData(context, controllerData.text);
               },
-              child: Text('Import'),
+              child: Text('Importar Lista'),
             ),
           ],
         );
@@ -110,7 +115,7 @@ class _HomePageState extends State<HomePage> {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('Close'),
+              child: Text('Cancelar'),
             ),
             TextButton(
               onPressed: () {
@@ -198,7 +203,7 @@ class _HomePageState extends State<HomePage> {
               onPressed: () {
               Navigator.of(context).pop();
               },
-              child: Text('Close'),
+              child: Text('Cancelar'),
             ),
             TextButton(
               onPressed: () => _copyToClipboard(teams),
@@ -232,6 +237,51 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  // Remove o jogador selecionado
+  void _delPlayerSelected(Player player) {
+    setState(() {
+      listPlayers.remove(player);
+      quantityPlayers = listPlayers.length;
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Jogador removido da lista!'))
+    );
+  }
+
+  void _clearListPlayer(BuildContext context, countPlayers) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Limpar lista de jogadores'),
+          content: Text('Deseja realmente limpar a lista de $countPlayers jogadores?'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Cancelar'),
+            ),
+            TextButton(
+              onPressed: () {
+                setState(() {
+                  listPlayers.clear();
+                  quantityPlayers = 0;
+                });
+                Navigator.of(context).pop();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Lista de jogadores limpa!'))
+                );
+              },
+              child: Text('Limpar'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
 
@@ -254,27 +304,26 @@ class _HomePageState extends State<HomePage> {
             ],
           ),
         ),
-        bottomNavigationBar: BottomNavigationBar(
-          items: const <BottomNavigationBarItem>[
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home),
-              label: 'Home',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.list),
-              label: 'Players',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.settings),
-              label: 'Settings',
-            ),
-          ],
-          currentIndex: 0,
-          selectedItemColor: Colors.black,
-          onTap: (index) {
-            // Handle navigation to different pages here
-          },
-        ),
+        // bottomNavigationBar: BottomNavigationBar(
+        //   items: const <BottomNavigationBarItem>[
+        //     BottomNavigationBarItem(
+        //       icon: Icon(Icons.home),
+        //       label: 'Home',
+        //     ),
+        //     BottomNavigationBarItem(
+        //       icon: Icon(Icons.list),
+        //       label: 'Players',
+        //     ),
+        //     BottomNavigationBarItem(
+        //       icon: Icon(Icons.settings),
+        //       label: 'Settings',
+        //     ),
+        //   ],
+        //   currentIndex: 0,
+        //   selectedItemColor: Colors.black,
+        //   onTap: (index) {
+        //   },
+        // ),
         floatingActionButton: FloatingActionButton(
           onPressed: () => _showDialogModalImportData(context),
           child: Icon(Icons.add),
@@ -308,7 +357,7 @@ class _HomePageState extends State<HomePage> {
                         IconButton(
                           tooltip: 'Jogador especial',
                           icon: Icon(Icons.star),
-                          color: player.typePlayer == 'especial' ? Colors.yellow : Colors.grey,
+                          color: player.typePlayer == 'especial' ? Colors.red : Colors.grey,
                           onPressed: () => _setPlayerType(player, 'especial'),
                         ),
                         IconButton(
@@ -317,8 +366,15 @@ class _HomePageState extends State<HomePage> {
                           color: player.typePlayer == 'goleiro' ? Colors.blue : Colors.grey,
                           onPressed: () => _setPlayerType(player, 'goleiro'),
                         ),
+                        IconButton(
+                          tooltip: 'Remover',
+                          icon: Icon(Icons.remove),
+                          color: Colors.grey,
+                          onPressed: () => _delPlayerSelected(player),
+                        ),
                       ]
                     ),
+                    leading: Text('${index+1}'),
                   );
                 },
               ),
@@ -327,6 +383,10 @@ class _HomePageState extends State<HomePage> {
            ButtonBar(
             alignment: MainAxisAlignment.center,
             children: [
+              ElevatedButton(
+                onPressed: () => _clearListPlayer(context, quantityPlayers),
+                child: Icon(Icons.clear_all),
+              ),
               ElevatedButton(
                 onPressed: () => _showDialogModalDrawTeams(context, quantityPlayers),
                 child: Text('Sortear Times'),
