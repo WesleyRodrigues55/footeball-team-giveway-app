@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:footeball_team_giveway_app/components/MyShowDialog.dart';
+import 'package:footeball_team_giveway_app/components/DIalogModalImportData.dart';
+import 'package:footeball_team_giveway_app/components/DialogModalDrawTeams.dart';
+import 'package:footeball_team_giveway_app/components/DialogModalDrawnTeams.dart';
 import 'package:footeball_team_giveway_app/model/Player.dart';
 
 class HomePage extends StatefulWidget {
@@ -46,74 +48,18 @@ class _HomePageState extends State<HomePage> {
 
   // Abre o diálogo, e executa a importação da lista de jogadores
   void _showDialogModalImportData(BuildContext context) {
-
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return MyShowDialog(
-          title: 'Importar lista de jogadores',
-          content: Form(
-            key: formKey,
-            child: TextFormField(
-              controller: controllerData,
-              maxLines: 10,
-              decoration: InputDecoration(
-                hintText: 'Estilo aceitável:\n1- Player 1\n2- Player 2\n3- Player 3\n4- ...',
-                border: OutlineInputBorder(),
-              ),
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('Cancelar'),
-            ),
-            TextButton(
-              onPressed: () {
-                _getData(context, controllerData.text);
-              },
-              child: Text('Importar Lista'),
-            ),
-          ],
+        return DialogModalImportData(
+          controllerData: controllerData,
+          formKey: formKey,
+          getData: (BuildContext context, String data) {
+            _getData(context, controllerData.text);
+          },
         );
-      }
+      },
     );
-
-    // showDialog(
-    //   context: context,
-    //   builder: (BuildContext context) {
-    //     return AlertDialog(
-    //       title: Text('Importar lista de jogadores'),
-    //       content: Form(
-    //         key: formKey,
-    //         child: TextFormField(
-    //           controller: controllerData,
-    //           maxLines: 10,
-    //           decoration: InputDecoration(
-    //             hintText: 'Estilo aceitável:\n1- Player 1\n2- Player 2\n3- Player 3\n4- ...',
-    //             border: OutlineInputBorder(),
-    //           ),
-    //         ),
-    //       ),
-    //       actions: <Widget>[
-    //         TextButton(
-    //           onPressed: () {
-    //             Navigator.of(context).pop();
-    //           },
-    //           child: Text('Cancelar'),
-    //         ),
-    //         TextButton(
-    //           onPressed: () {
-    //             _getData(context, controllerData.text);
-    //           },
-    //           child: Text('Importar Lista'),
-    //         ),
-    //       ],
-    //     );
-    //   },
-    // );
   }
 
   // Abre o diálogo, e executa o sorteio dos times
@@ -121,46 +67,13 @@ class _HomePageState extends State<HomePage> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Sortear Times'),
-          content: Container(
-            height: 100,
-            child: Column(
-              children: [
-                Text('Há $countPlayers jogadores na lista.'),
-                SizedBox(height: 16),
-                Form(
-                  key: formKey,
-                  child: TextFormField(
-                    controller: controllerPlayersPerTeam,
-                    keyboardType: TextInputType.number,
-                    inputFormatters: <TextInputFormatter>[
-                      FilteringTextInputFormatter.digitsOnly
-                    ],
-                    decoration: InputDecoration(
-                      hintText: 'Quantidade de jogadores por time',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('Cancelar'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                _drawTeams(controllerPlayersPerTeam.text);
-              },
-              child: Text('Sortear'),
-            ),
-          ],
+        return DialogModalDrawTeam(
+          countPlayers: countPlayers,
+          controllerPlayersPerTeam: controllerPlayersPerTeam,
+          formKey: formKey,
+          onDrawTeams: (String playersPerTeam) {
+            _drawTeams(playersPerTeam);
+          },
         );
       },
     );
@@ -187,12 +100,11 @@ class _HomePageState extends State<HomePage> {
         .where((player) => player.typePlayer != 'especial' && player.typePlayer != 'goleiro')
         .toList();
 
-    // Embaralhe as listas para garantir aleatoriedade
     specialPlayers.shuffle();
     goalkeepers.shuffle();
     remainingPlayers.shuffle();
 
-    // Distribua um jogador especial (se houver) e um goleiro (se houver) para cada time
+    // Distribui um jogador especial (se houver) e um goleiro (se houver) para cada time
     for (var i = 0; i < teams.length; i++) {
       if (specialPlayers.isNotEmpty) {
         teams[i].add(specialPlayers.removeLast());
@@ -202,7 +114,7 @@ class _HomePageState extends State<HomePage> {
       }
     }
 
-    // Distribua os jogadores restantes nos times, garantindo que cada time tenha no máximo `playersPerTeam` jogadores
+    // Distribui os jogadores restantes nos times, garantindo que cada time tenha no máximo `playersPerTeam` jogadores
     int playerIndex = 0;
     for (var i = 0; i < teams.length && playerIndex < remainingPlayers.length; i++) {
       while (teams[i].length < playersPerTeam && playerIndex < remainingPlayers.length) {
@@ -211,41 +123,14 @@ class _HomePageState extends State<HomePage> {
       }
     }
 
-    showDialog(
+     showDialog(
       context: context,
       builder: (BuildContext context) {
-      return AlertDialog(
-        title: Text('Times Sorteados'),
-        content: Container(
-          width: double.maxFinite,
-          child: ListView.builder(
-            shrinkWrap: true,
-            itemCount: teams.length,
-            itemBuilder: (context, index) {
-            final team = teams[index];
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-              Text('Time ${index + 1}:', style: TextStyle(fontWeight: FontWeight.bold)),
-              ...team.map((player) => Text(player.name)).toList(),
-              SizedBox(height: 16),
-              ],
-            );
-            },
-          ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-              Navigator.of(context).pop();
-              },
-              child: Text('Cancelar'),
-            ),
-            TextButton(
-              onPressed: () => _copyToClipboard(teams),
-              child: Text('Copiar'),
-            ),
-          ],
+        return DialogModalDrawnTeams(
+          teams: teams,
+          copyToClipboard: (List<List<Player>> teams) {
+            _copyToClipboard(teams);
+          },
         );
       },
     );
