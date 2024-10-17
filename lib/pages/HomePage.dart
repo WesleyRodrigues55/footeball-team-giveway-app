@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:footeball_team_giveway_app/components/DIalogModalImportData.dart';
+import 'package:footeball_team_giveway_app/components/DialogModalClearPlayerList.dart';
 import 'package:footeball_team_giveway_app/components/DialogModalDrawTeams.dart';
 import 'package:footeball_team_giveway_app/components/DialogModalDrawnTeams.dart';
 import 'package:footeball_team_giveway_app/model/Player.dart';
+import 'package:footeball_team_giveway_app/utils/SnackBarPerson.dart';
 
 class HomePage extends StatefulWidget {
 
@@ -23,11 +25,9 @@ class _HomePageState extends State<HomePage> {
   void _getData(context, String data) {
     final names = data.split('\n').where((line) {
     final trimmed = line.trim();
-
-      // return RegExp(r'^\d+\s*-\s*').hasMatch(trimmed);
+    
       return RegExp(r'^(\d+\s*-\s*|\d+\s*|\-\s*)?.+', caseSensitive: false).hasMatch(trimmed);
     }).map((line) {
-      // var name = line.replaceFirst(RegExp(r'^\d+\s*-\s*'), '').trim();
       var name = line.replaceFirst(RegExp(r'^(\d+\s*-\s*|\d+\s*|\-\s*)', caseSensitive: false), '').trim();
       String typePlayer = 'normal';
 
@@ -41,9 +41,7 @@ class _HomePageState extends State<HomePage> {
 
     controllerData.value = TextEditingValue.empty;
     Navigator.of(context).pop();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Jogador(es) adicionado na lista!'))
-    );
+    SnackBarUtils.showSnackBar(context, 'Jogador(es) adicionado na lista!');
   }
 
   // Abre o diálogo, e executa a importação da lista de jogadores
@@ -141,9 +139,7 @@ class _HomePageState extends State<HomePage> {
     Clipboard.setData(ClipboardData(
       text: teams.map((team) => 'Time ${teams.indexOf(team) + 1}:\n' + team.map((player) => player.name).join('\n')).join('\n\n')
     ));
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Lista de jogadores copiada!'))
-    );
+    SnackBarUtils.showSnackBar(context, 'Lista de jogadores copiada!');
     Navigator.of(context).pop();
   }
 
@@ -165,40 +161,27 @@ class _HomePageState extends State<HomePage> {
       quantityPlayers = listPlayers.length;
     });
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Jogador removido da lista!'))
-    );
+    SnackBarUtils.showSnackBar(context, 'Jogador removido da lista!');
   }
 
   // Limpa a lista de jogadores
-  void _clearListPlayer(BuildContext context, countPlayers) {
+  void _clearListPlayer() {
+    setState(() {
+      listPlayers.clear();
+      quantityPlayers = 0;
+    });
+    Navigator.of(context).pop();
+    SnackBarUtils.showSnackBar(context, 'Lista de jogadores limpa!');
+  }
+
+  // Abre o diálogo, e executa a função que limpa a lista de jogadores
+  void _showDialogModalClearListPlayer(BuildContext context) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Limpar lista de jogadores'),
-          content: Text('Deseja realmente limpar a lista de $countPlayers jogadores?'),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('Cancelar'),
-            ),
-            TextButton(
-              onPressed: () {
-                setState(() {
-                  listPlayers.clear();
-                  quantityPlayers = 0;
-                });
-                Navigator.of(context).pop();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Lista de jogadores limpa!'))
-                );
-              },
-              child: Text('Limpar'),
-            ),
-          ],
+        return  DialogModalClearPlayerList(
+          quantityPlayers: quantityPlayers,
+          clearListPlayer:  _clearListPlayer
         );
       },
     );
@@ -277,7 +260,7 @@ class _HomePageState extends State<HomePage> {
           alignment: MainAxisAlignment.center,
           children: [
             ElevatedButton(
-              onPressed: () => _clearListPlayer(context, quantityPlayers),
+              onPressed: () => _showDialogModalClearListPlayer(context),
               child: Icon(Icons.clear_all),
             ),
             ElevatedButton(
