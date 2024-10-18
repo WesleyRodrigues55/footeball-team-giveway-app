@@ -19,10 +19,11 @@ class DialogModalDrawTeam extends StatelessWidget {
     return AlertDialog(
       title: const Text('Sortear Times'),
       content: Container(
-        height: 100,
+        height: 200,
         child: Column(
           children: [
             Text('Há $countPlayers jogadores na lista.'),
+            const Text('Defina a quantidade de jogadores por time'),
             const SizedBox(height: 16),
             Form(
               key: formKey,
@@ -33,9 +34,22 @@ class DialogModalDrawTeam extends StatelessWidget {
                   FilteringTextInputFormatter.digitsOnly,
                 ],
                 decoration: const InputDecoration(
-                  hintText: 'Quantidade de jogadores por time',
+                  hintText: '...',
                   border: OutlineInputBorder(),
                 ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Por favor, insira um número';
+                  }
+                  int playersPerTeam = int.parse(value);
+                  if (playersPerTeam <= 0) {
+                    return 'A quantidade de jogadores por time\ndeve ser maior que zero';
+                  }
+                  if (playersPerTeam >= countPlayers) {
+                    return 'A quantidade de jogadores por time\ndeve ser menor que a quantidade\ntotal de jogadores';
+                  }
+                    return null;
+                },
               ),
             ),
           ],
@@ -49,10 +63,12 @@ class DialogModalDrawTeam extends StatelessWidget {
           child: const Text('Cancelar'),
         ),
         TextButton(
-          onPressed: () {
-            Navigator.of(context).pop();
-            onDrawTeams(controllerPlayersPerTeam.text);
-          },
+            onPressed: () {
+            if (formKey.currentState?.validate() ?? false) {
+              Navigator.of(context).pop();
+              onDrawTeams(controllerPlayersPerTeam.text);
+            }
+            },
           child: const Text('Sortear'),
         ),
       ],
