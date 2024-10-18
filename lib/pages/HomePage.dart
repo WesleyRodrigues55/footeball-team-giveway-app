@@ -220,7 +220,7 @@ class _HomePageState extends State<HomePage> {
                 final player = listPlayers[index];
                 return ListTile(
                   title: Text(listPlayers[index].name),
-                  subtitle: Text(player.typePlayer),
+                  subtitle: Text('Tipo: ${player.typePlayer}'),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
