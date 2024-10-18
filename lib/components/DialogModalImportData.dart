@@ -24,6 +24,13 @@ class DialogModalImportData extends StatelessWidget {
               hintText: 'Entradas aceitáveis:\n1- Player 1\n- Player 2\nPlayer 3\n4 Player\n Player',
               border: OutlineInputBorder(),
             ),
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Por favor, insira os dados';
+              }
+              return null;
+
+            },
           ),
         ),
         actions: <Widget>[
@@ -35,7 +42,9 @@ class DialogModalImportData extends StatelessWidget {
           ),
           TextButton(
             onPressed: () {
-              getData(context, controllerData.text);
+              if (formKey.currentState?.validate() ?? false) {
+                getData(context, controllerData.text);
+              }
             },
             child: const Text('Importar Lista'),
           ),
